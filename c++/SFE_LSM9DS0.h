@@ -350,7 +350,7 @@ public:
 
 private:	
 
-  mraa::I2c* gyro;
+	mraa::I2c* gyro;
   mraa::I2c* xm;
 	// gScale, aScale, and mScale store the current scale range for each 
 	// sensor. Should be updated whenever that value changes.
