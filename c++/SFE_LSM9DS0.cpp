@@ -24,8 +24,8 @@ Distributed as-is; no warranty is given.
 ******************************************************************************/
 
 #include "SFE_LSM9DS0.h"
-#include <mraa.h>
-#include <stdint.h>
+//#include <mraa.h>
+//#include <stdint.h>
 #include <unistd.h>
 
 LSM9DS0::LSM9DS0(uint8_t gAddr, uint8_t xmAddr):
@@ -496,6 +496,10 @@ bool LSM9DS0::mDataOverflow()
 
 void LSM9DS0::gWriteByte(uint8_t subAddress, uint8_t data)
 {
+	//mraa_result_t mraa_i2c_write_byte_data	(	mraa_i2c_context 	dev,
+																						//const uint8_t 	data,
+																						//const uint8_t 	command) 
+
   gyro->writeReg(subAddress, data);
 }
 
