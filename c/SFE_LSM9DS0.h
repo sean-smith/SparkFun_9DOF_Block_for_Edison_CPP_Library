@@ -26,6 +26,8 @@ Distributed as-is; no warranty is given.
 #define __SFE_LSM9DS0_H__
 
 #include <stdint.h>
+#include <stdbool.h>
+//#include <unistd>
 #include "mraa.h"
 
 ////////////////////////////
@@ -117,32 +119,40 @@ Distributed as-is; no warranty is given.
 #define ACT_THS				0x3E
 #define ACT_DUR				0x3F
 
+//typedef enum bool {
+	//false,
+	//true
+//} bool;
+
 // gyro_scale defines the possible full-scale ranges of the gyroscope:
-enum gyro_scale
+typedef enum gyro_scale
 {
 	G_SCALE_245DPS,		// 00:  245 degrees per second
 	G_SCALE_500DPS,		// 01:  500 dps
 	G_SCALE_2000DPS,	// 10:  2000 dps
-};
+} gyro_scale;
+
 // accel_scale defines all possible FSR's of the accelerometer:
-enum accel_scale
+typedef enum accel_scale
 {
 	A_SCALE_2G,	// 000:  2g
 	A_SCALE_4G,	// 001:  4g
 	A_SCALE_6G,	// 010:  6g
 	A_SCALE_8G,	// 011:  8g
 	A_SCALE_16G	// 100:  16g
-};
+} accel_scale;
+
 // mag_scale defines all possible FSR's of the magnetometer:
-enum mag_scale
+typedef enum mag_scale
 {
 	M_SCALE_2GS,	// 00:  2Gs
 	M_SCALE_4GS, 	// 01:  4Gs
 	M_SCALE_8GS,	// 10:  8Gs
 	M_SCALE_12GS,	// 11:  12Gs
-};
+} mag_scale;
+
 // gyro_odr defines all possible data rate/bandwidth combos of the gyro:
-enum gyro_odr
+typedef enum gyro_odr
 {							// ODR (Hz) --- Cutoff
 	G_ODR_95_BW_125  = 0x0, //   95         12.5
 	G_ODR_95_BW_25   = 0x1, //   95          25
@@ -159,9 +169,10 @@ enum gyro_odr
 	G_ODR_760_BW_35  = 0xD, //   760         35
 	G_ODR_760_BW_50  = 0xE, //   760         50
 	G_ODR_760_BW_100 = 0xF, //   760         100
-};
+} gyro_odr;
+
 // accel_oder defines all possible output data rates of the accelerometer:
-enum accel_odr
+typedef enum accel_odr
 {
 	A_POWER_DOWN, 	// Power-down mode (0x0)
 	A_ODR_3125,		// 3.125 Hz	(0x1)
@@ -174,20 +185,20 @@ enum accel_odr
 	A_ODR_400,		// 400 Hz (0x8)
 	A_ODR_800,		// 800 Hz (9)
 	A_ODR_1600		// 1600 Hz (0xA)
-};
+} accel_odr;
 
 // accel_abw defines all possible anti-aliasing filter rates of the accelerometer:
-enum accel_abw
+typedef enum accel_abw
 {
 	A_ABW_773,		// 773 Hz (0x0)
 	A_ABW_194,		// 194 Hz (0x1)
 	A_ABW_362,		// 362 Hz (0x2)
 	A_ABW_50,		//  50 Hz (0x3)
-};
+} accel_abw;
 
 
 // mag_oder defines all possible output data rates of the magnetometer:
-enum mag_odr
+typedef enum mag_odr
 {
 	M_ODR_3125,	// 3.125 Hz (0x00)
 	M_ODR_625,	// 6.25 Hz (0x01)
@@ -195,7 +206,15 @@ enum mag_odr
 	M_ODR_25,	// 25 Hz (0x03)
 	M_ODR_50,	// 50 (0x04)
 	M_ODR_100,	// 100 Hz (0x05)
-};
+} mag_odr;
+
+//typedef enum gyro_scale gyro_scale;
+//typedef enum accel_scale accel_scale;
+//typedef enum mag_scale mag_scale;
+//typedef enum gyro_odr gyro_odr;
+//typedef enum accel_odr accel_odr;
+//typedef enum accel_abw accel_abw;
+//typedef enum mag_odr mag_odr;
 
 typedef struct LSM9DS0 {
 	// We'll store the gyro, accel, and magnetometer readings in a series of
@@ -244,14 +263,11 @@ LSM9DS0_t* imu_setup(uint8_t gAddr, uint8_t xmAddr);
 // Output: The function will return an unsigned 16-bit value. The most-sig
 //		bytes of the output are the WHO_AM_I reading of the accel. The
 //		least significant two bytes are the WHO_AM_I reading of the gyro.
-// All parameters have a defaulted value, so you can call just "begin()".
 // Default values are FSR's of:  245DPS, 2g, 2Gs; ODRs of 95 Hz for 
 // gyro, 100 Hz for accelerometer, 100 Hz for magnetometer.
 // Use the return value of this function to verify communication.
-uint16_t begin(gyro_scale gScl = G_SCALE_245DPS, 
-			accel_scale aScl = A_SCALE_2G, mag_scale mScl = M_SCALE_2GS,
-			gyro_odr gODR = G_ODR_95_BW_125, accel_odr aODR = A_ODR_50, 
-			mag_odr mODR = M_ODR_50);
+uint16_t begin(LSM9DS0_t* imu, gyro_scale gScl, accel_scale aScl,
+		mag_scale mScl, gyro_odr gODR, accel_odr aODR, mag_odr mODR);
 
 // readGyro() -- Read the gyroscope output registers.
 // This function will read all six gyroscope output registers.
@@ -304,7 +320,7 @@ float calcMag(int16_t mag);
 // Input:
 // 	- gScl = The desired gyroscope scale. Must be one of three possible
 //		values from the gyro_scale enum.
-void setGyroScale(gyro_scale gScl);
+void setGyroScale(LSM9DS0_t* imu, gyro_scale gScl);
 
 // setAccelScale() -- Set the full-scale range of the accelerometer.
 // This function can be called to set the scale of the accelerometer to
@@ -326,7 +342,7 @@ void setMagScale(mag_scale mScl);
 // Input:
 //	- gRate = The desired output rate and cutoff frequency of the gyro.
 //		Must be a value from the gyro_odr enum (check above, there're 14).
-void setGyroODR(gyro_odr gRate);
+void setGyroODR(mraa_i2c_context gyro, gyro_odr gRate);
 
 // setAccelODR() -- Set the output data rate of the accelerometer
 // Input:
@@ -373,7 +389,7 @@ bool mDataOverflow();
 //	- CTRL_REG4_G = 0x00: Continuous update mode. Data LSB stored in lower
 //		address. Scale set to 245 DPS. SPI mode set to 4-wire.
 //	- CTRL_REG5_G = 0x00: FIFO disabled. HPF disabled.
-void initGyro();
+void initGyro(mraa_i2c_context gyro);
 
 // initAccel() -- Sets up the accelerometer to begin reading.
 // This function steps through all accelerometer related control registers.
@@ -401,7 +417,7 @@ void initMag();
 // 	- subAddress = Register to be read from.
 // Output:
 // 	- An 8-bit value read from the requested address.
-uint8_t gReadByte(uint8_t subAddress);
+uint8_t gReadByte(mraa_i2c_context gyro, uint8_t subAddress);
 
 // gReadBytes() -- Reads a number of bytes -- beginning at an address
 // and incrementing from there -- from the gyroscope.
@@ -418,14 +434,14 @@ void gReadBytes(uint8_t subAddress, uint8_t * dest, uint8_t count);
 // Input:
 //	- subAddress = Register to be written to.
 //	- data = data to be written to the register.
-void gWriteByte(uint8_t subAddress, uint8_t data);
+void gWriteByte(mraa_i2c_context gyro, uint8_t subAddress, uint8_t data);
 
 // xmReadByte() -- Read a byte from a register in the accel/mag sensor
 // Input:
 //	- subAddress = Register to be read from.
 // Output:
 //	- An 8-bit value read from the requested register.
-uint8_t xmReadByte(uint8_t subAddress);
+uint8_t xmReadByte(mraa_i2c_context xm, uint8_t subAddress);
 
 // xmReadBytes() -- Reads a number of bytes -- beginning at an address
 // and incrementing from there -- from the accelerometer/magnetometer.
@@ -442,7 +458,7 @@ void xmReadBytes(uint8_t subAddress, uint8_t * dest, uint8_t count);
 // Input:
 //	- subAddress = Register to be written to.
 //	- data = data to be written to the register.
-void xmWriteByte(uint8_t subAddress, uint8_t data);
+void xmWriteByte(mraa_i2c_context xm, uint8_t subAddress, uint8_t data);
 
 // calcgRes() -- Calculate the resolution of the gyroscope.
 // This function will set the value of the gRes variable. gScale must
